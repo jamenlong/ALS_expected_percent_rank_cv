@@ -79,7 +79,6 @@ def expected_percent_rank_cv(ratings_df, userCol = "userId", itemCol = "songId",
 
           #Printing the model's performance on each fold
           print ("Model Parameters: ")("Rank:"), r, ("  MaxIter:"), mi, ("RegParam:"), rp, ("Alpha: "), a
-#           print("Test Percent Rank Errors: "), performance1, performance2, performance3, performance4, performance5
           print("Test Percent Rank Errors: "), performance1, performance2, performance3, performance4, performance5
 
           #Validating the model's performance on the validation set
