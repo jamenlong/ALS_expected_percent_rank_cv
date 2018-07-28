@@ -1,4 +1,4 @@
-def expected_percent_rank_cv(ratings_df, userCol = "userId", itemCol = "songId", ratingCol = "num_plays", ranks = [10, 50, 100, 150, 200], maxIters = [10, 25, 50, 100, 200, 400], regParams = [.05, .1, .15], alphas = [10, 40, 80, 100]):
+def ROEM_cv(ratings_df, userCol = "userId", itemCol = "songId", ratingCol = "num_plays", ranks = [10, 50, 100, 150, 200], maxIters = [10, 25, 50, 100, 200, 400], regParams = [.05, .1, .15], alphas = [10, 40, 80, 100]):
 
   #Originally run on a subset of the Echo Next Taste Profile dataset found her:
   #https://labrosa.ee.columbia.edu/millionsong/tasteprofile
@@ -53,29 +53,29 @@ def expected_percent_rank_cv(ratings_df, userCol = "userId", itemCol = "songId",
           predictions5 = model5.transform(test5)
 
           #Expected percentile rank error metric function
-          def exp_perc_rank(predictions):
+          def ROEM(predictions, userCol = "userId", itemCol = "songId", ratingCol = "num_plays"):
               #Creates table that can be queried
               predictions.createOrReplaceTempView("predictions")
 
               #Sum of total number of plays of all songs
-              denominator = predictions.groupBy().sum("num_plays").collect()[0][0]
+              denominator = predictions.groupBy().sum(ratingCol).collect()[0][0]
 
               #Calculating rankings of songs predictions by user
-              spark.sql("SELECT userID, num_plays, PERCENT_RANK() OVER (PARTITION BY userId ORDER BY prediction DESC) AS rank FROM predictions").createOrReplaceTempView("rankings")
+              spark.sql("SELECT " + userCol + " , " + ratingCol + " , PERCENT_RANK() OVER (PARTITION BY " + userCol + " ORDER BY prediction DESC) AS rank FROM predictions").createOrReplaceTempView("rankings")
 
               #Multiplies the rank of each song by the number of plays and adds the products together
-              numerator = spark.sql('SELECT SUM(num_plays * rank) FROM rankings').collect()[0][0]
+              numerator = spark.sql('SELECT SUM(' + ratingCol + ' * rank) FROM rankings').collect()[0][0]
 
               performance = numerator/denominator
 
               return performance
 
           #Calculating expected percentile rank error metric for the model on each fold's prediction set
-          performance1 = exp_perc_rank(predictions1)
-          performance2 = exp_perc_rank(predictions2)
-          performance3 = exp_perc_rank(predictions3)
-          performance4 = exp_perc_rank(predictions4)
-          performance5 = exp_perc_rank(predictions5)
+          performance1 = ROEM(predictions1)
+          performance2 = ROEM(predictions2)
+          performance3 = ROEM(predictions3)
+          performance4 = ROEM(predictions4)
+          performance5 = ROEM(predictions5)
 
           #Printing the model's performance on each fold
           print ("Model Parameters: ")("Rank:"), r, ("  MaxIter:"), mi, ("RegParam:"), rp, ("Alpha: "), a
@@ -84,7 +84,7 @@ def expected_percent_rank_cv(ratings_df, userCol = "userId", itemCol = "songId",
           #Validating the model's performance on the validation set
           validation_model = als.fit(train)
           validation_predictions = validation_model.transform(validate)
-          validation_performance = exp_perc_rank(validation_predictions)
+          validation_performance = ROEM(validation_predictions)
 
           #Printing model's final expected percentile ranking error metric
           print("Validation Percent Rank Error: "), validation_performance
