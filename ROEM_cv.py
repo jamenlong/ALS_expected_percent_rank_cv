@@ -11,14 +11,16 @@ def ROEM_cv(ratings_df, userCol = "userId", itemCol = "songId", ratingCol = "num
   #Building train and validation test sets
   train, validate = ratings_df.randomSplit([0.8, 0.2], seed = 0)
 
-  #Building 5 folds within the training set. The use of seeds will likely cause some random overlap between the folds.
+  #Building 5 folds within the training set.
   #To ensure that users with few ratings don't all get sent to the test set, you can filter out those with fewer than
   #a given threshold of ratings. 20 was used and found to be effective.
-  train1, test1 = train.randomSplit([0.8, 0.2], seed = 1)
-  train2, test2 = train.randomSplit([0.8, 0.2], seed = 15)
-  train3, test3 = train.randomSplit([0.8, 0.2], seed = 388)
-  train4, test4 = train.randomSplit([0.8, 0.2], seed = 217)
-  train5, test5 = train.randomSplit([0.8, 0.2], seed = 686)
+  test1, test2, test3, test4, test5 = train.randomSplit([0.2, 0.2, 0.2, 0.2, 0.2], seed = 1)
+  train1 = test2.union(test3).union(test4).union(test5)
+  train2 = test3.union(test4).union(test5).union(test1)
+  train3 = test4.union(test5).union(test1).union(test2)
+  train4 = test5.union(test1).union(test2).union(test3)
+  train5 = test1.union(test2).union(test3).union(test4)
+  
 
   #Creating variables that will be replaced by the best model's hyperparameters for subsequent printing
   best_validation_performance = 9999999999999
