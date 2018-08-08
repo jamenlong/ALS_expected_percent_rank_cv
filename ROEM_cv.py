@@ -1,6 +1,6 @@
 def ROEM_cv(ratings_df, userCol = "userId", itemCol = "songId", ratingCol = "num_plays", ranks = [10, 50, 100, 150, 200], maxIters = [10, 25, 50, 100, 200, 400], regParams = [.05, .1, .15], alphas = [10, 40, 80, 100]):
 
-  #Originally run on a subset of the Echo Next Taste Profile dataset found her:
+  #Originally run on a subset of the Echo Next Taste Profile dataset found here:
   #https://labrosa.ee.columbia.edu/millionsong/tasteprofile
 
   from pyspark.sql.functions import rand
